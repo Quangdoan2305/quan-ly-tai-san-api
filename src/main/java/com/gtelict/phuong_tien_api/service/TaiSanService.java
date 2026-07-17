@@ -164,6 +164,16 @@ public class TaiSanService {
     }
 
     public PageResponse<BienBanBanGiaoDto> searchBienBan(String soBienBan, LocalDate tuNgay, LocalDate denNgay, String loaiBenNhan, String idBenNhan, String loaiBenGiao, String idBenGiao, String nguoiKyId, String maDonVi, Pageable pageable) {
+        soBienBan = soBienBan == null ? "" : soBienBan;
+        tuNgay = tuNgay == null ? LocalDate.of(1900, 1, 1) : tuNgay;
+        denNgay = denNgay == null ? LocalDate.of(2100, 1, 1) : denNgay;
+        loaiBenNhan = loaiBenNhan == null ? "" : loaiBenNhan;
+        idBenNhan = idBenNhan == null ? "" : idBenNhan;
+        loaiBenGiao = loaiBenGiao == null ? "" : loaiBenGiao;
+        idBenGiao = idBenGiao == null ? "" : idBenGiao;
+        nguoiKyId = nguoiKyId == null ? "" : nguoiKyId;
+        maDonVi = maDonVi == null ? "" : maDonVi;
+
         Page<BienBanBanGiao> page = bienBanRepo.search(soBienBan, tuNgay, denNgay, loaiBenNhan, idBenNhan, loaiBenGiao, idBenGiao, nguoiKyId, maDonVi, pageable);
         
         PageResponse<BienBanBanGiaoDto> response = new PageResponse<>();

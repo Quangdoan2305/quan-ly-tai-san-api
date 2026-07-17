@@ -14,15 +14,15 @@ public interface BienBanBanGiaoRepository extends JpaRepository<BienBanBanGiao, 
     Page<BienBanBanGiao> findByTaiSanId(@Param("taiSanId") String taiSanId, Pageable pageable);
 
     @Query("SELECT b FROM BienBanBanGiao b WHERE " +
-           "(:soBienBan IS NULL OR LOWER(b.soBienBan) LIKE LOWER(CONCAT('%', :soBienBan, '%'))) AND " +
-           "(CAST(:tuNgay AS date) IS NULL OR b.ngayBanGiao >= :tuNgay) AND " +
-           "(CAST(:denNgay AS date) IS NULL OR b.ngayBanGiao <= :denNgay) AND " +
-           "(:loaiBenNhan IS NULL OR b.loaiBenNhan = :loaiBenNhan) AND " +
-           "(:idBenNhan IS NULL OR b.idBenNhan = :idBenNhan) AND " +
-           "(:loaiBenGiao IS NULL OR b.loaiBenGiao = :loaiBenGiao) AND " +
-           "(:idBenGiao IS NULL OR b.idBenGiao = :idBenGiao) AND " +
-           "(:nguoiKyId IS NULL OR b.nguoiKyId = :nguoiKyId) AND " +
-           "(:maDonVi IS NULL OR (b.loaiBenNhan = 'DON_VI' AND b.idBenNhan = :maDonVi) OR (b.loaiBenGiao = 'DON_VI' AND b.idBenGiao = :maDonVi)) " +
+           "(:soBienBan = '' OR LOWER(b.soBienBan) LIKE LOWER(CONCAT('%', :soBienBan, '%'))) AND " +
+           "(b.ngayBanGiao >= :tuNgay) AND " +
+           "(b.ngayBanGiao <= :denNgay) AND " +
+           "(:loaiBenNhan = '' OR b.loaiBenNhan = :loaiBenNhan) AND " +
+           "(:idBenNhan = '' OR b.idBenNhan = :idBenNhan) AND " +
+           "(:loaiBenGiao = '' OR b.loaiBenGiao = :loaiBenGiao) AND " +
+           "(:idBenGiao = '' OR b.idBenGiao = :idBenGiao) AND " +
+           "(:nguoiKyId = '' OR b.nguoiKyId = :nguoiKyId) AND " +
+           "(:maDonVi = '' OR (b.loaiBenNhan = 'DON_VI' AND b.idBenNhan = :maDonVi) OR (b.loaiBenGiao = 'DON_VI' AND b.idBenGiao = :maDonVi)) " +
            "ORDER BY b.ngayBanGiao DESC")
     Page<BienBanBanGiao> search(
         @Param("soBienBan") String soBienBan,

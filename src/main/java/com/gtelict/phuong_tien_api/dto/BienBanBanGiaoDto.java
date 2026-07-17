@@ -28,8 +28,14 @@ public class BienBanBanGiaoDto {
     @Schema(example = "KHO_TONG")
     private String idBenGiao;
     
-    @Schema(example = "CB002")
+    @Schema(example = "CB002", nullable = true)
     private String nguoiKyId;
+    
+    @Schema(example = "CB-02")
+    private String nguoiLapId;
+
+    @Schema(example = "NHAP")
+    private String trangThai;
     
     private String fileDinhKem;
     

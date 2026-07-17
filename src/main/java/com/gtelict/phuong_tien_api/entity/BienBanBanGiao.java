@@ -20,5 +20,7 @@ public class BienBanBanGiao {
     private String idBenGiao;
     
     private String nguoiKyId;
+    private String nguoiLapId;
+    private String trangThai; // "NHAP", "DA_KY"
     private String fileDinhKem;
 }

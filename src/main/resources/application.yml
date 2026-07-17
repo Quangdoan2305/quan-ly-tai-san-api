@@ -5,6 +5,12 @@ spring:
     password: 123456
     driver-class-name: org.postgresql.Driver
   
+  sql:
+    init:
+      mode: always
+      schema-locations: file:init_db.sql
+      separator: ;
+  
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:

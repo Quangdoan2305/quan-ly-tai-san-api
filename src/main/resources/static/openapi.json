@@ -52,6 +52,42 @@
             }
           },
           {
+            "name": "maCanBo",
+            "in": "query",
+            "description": "Mã cán bộ",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hoTen",
+            "in": "query",
+            "description": "Họ và tên (tìm kiếm gần đúng)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "soCccd",
+            "in": "query",
+            "description": "Số CCCD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "capBac",
+            "in": "query",
+            "description": "Cấp bậc",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "description": "Số thứ tự trang (bắt đầu từ 0)",
@@ -415,6 +451,15 @@
             }
           },
           {
+            "name": "trangThai",
+            "in": "query",
+            "description": "Lọc theo trạng thái biên bản (NHAP hoặc DA_KY)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "description": "Số thứ tự trang (bắt đầu từ 0)",
@@ -518,6 +563,85 @@
         "description": "API thực hiện nghiệp vụ bàn giao tài sản."
       }
     },
+    "/v1/ban-giao/{id}": {
+      "get": {
+        "tags": [
+          "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+        ],
+        "summary": "Xem chi tiết biên bản",
+        "operationId": "getChiTietBienBan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponseBienBanBanGiaoDtoResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v1/ban-giao/{id}/ky": {
+      "put": {
+        "tags": [
+          "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+        ],
+        "summary": "Phê duyệt biên bản",
+        "operationId": "pheDuyetBienBan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PheDuyetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponseBienBanBanGiaoDtoResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
     "/v1/danh-muc/{loai}": {
       "get": {
         "tags": [
@@ -609,6 +733,22 @@
               "title": "Lỗi thao tác",
               "errorCode": "400",
               "message": "Dữ liệu đầu vào không hợp lệ hoặc không tìm thấy bản ghi tương ứng",
+              "time": "2024-05-15T10:00:00"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Không tìm thấy dữ liệu",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BadRequestResponse"
+            },
+            "example": {
+              "title": "Lỗi dữ liệu",
+              "errorCode": "404",
+              "message": "Không tìm thấy bản ghi tương ứng",
               "time": "2024-05-15T10:00:00"
             }
           }
@@ -904,6 +1044,18 @@
           }
         }
       },
+      "PheDuyetRequest": {
+        "type": "object",
+        "required": [
+          "nguoiKyId"
+        ],
+        "properties": {
+          "nguoiKyId": {
+            "type": "string",
+            "example": "CB-04"
+          }
+        }
+      },
       "BienBanRequest": {
         "type": "object",
         "required": [
@@ -912,12 +1064,26 @@
           "idBenNhan",
           "loaiBenGiao",
           "idBenGiao",
+          "nguoiLapId",
+          "trangThai",
           "chiTietTaiSan"
         ],
         "properties": {
           "soBienBan": {
             "type": "string",
             "example": "BB-2024-001"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "NHAP",
+              "DA_KY"
+            ],
+            "example": "NHAP"
+          },
+          "nguoiLapId": {
+            "type": "string",
+            "example": "CB001"
           },
           "loaiBenNhan": {
             "type": "string",
@@ -973,7 +1139,6 @@
           "idBenNhan",
           "loaiBenGiao",
           "idBenGiao",
-          "nguoiKyId",
           "chiTietTaiSan"
         ],
         "properties": {
@@ -989,6 +1154,18 @@
             "type": "string",
             "format": "date",
             "example": "2024-05-15"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "NHAP",
+              "DA_KY"
+            ],
+            "example": "NHAP"
+          },
+          "nguoiLapId": {
+            "type": "string",
+            "example": "CB001"
           },
           "loaiBenNhan": {
             "type": "string",
@@ -1016,7 +1193,10 @@
             "example": "KHO_TONG"
           },
           "nguoiKyId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "CB002"
           },
           "fileDinhKem": {

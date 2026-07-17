@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class CanBoChienSiService {
     @Autowired private CanBoChienSiRepository canBoRepo;
@@ -30,7 +33,7 @@ public class CanBoChienSiService {
         return response;
     }
 
-    public CanBoChiTiet getChiTiet(String id) {
+    public CanBoChiTiet getChiTiet(String id, jakarta.servlet.http.HttpServletRequest request) {
         CanBoChienSi entity = canBoRepo.findById(id).orElse(null);
         if (entity == null) return null;
         
@@ -49,6 +52,13 @@ public class CanBoChienSiService {
             chiTiet.setMaCongDan(entity.getCongDan().getId());
         }
         chiTiet.setThongTinCongDan(entity.getCongDan());
+
+        // [C10 Fix]: Ghi log PII Audit
+        if (entity.getCongDan() != null && entity.getCongDan().getSoCccd() != null && !entity.getCongDan().getSoCccd().isEmpty()) {
+            String clientIp = request != null ? request.getRemoteAddr() : "UNKNOWN";
+            String authHeader = request != null ? request.getHeader("Authorization") : null;
+            log.warn("[PII Audit Log] Dữ liệu CCCD đã được trả về. Client IP: {}, Auth: {}", clientIp, (authHeader != null ? "Có Token" : "Không Token"));
+        }
 
         List<TaiSan> taiSans = taiSanRepo.findByIdCanBoSuDung(entity.getId());
         chiTiet.setDanhSachTaiSan(taiSans.stream().map(ts -> {

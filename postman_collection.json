@@ -1,0 +1,176 @@
+{
+  "info": {
+    "name": "Hệ thống Quản lý Tài sản",
+    "description": "Các API thử nghiệm luồng nghiệp vụ quản lý, bàn giao tài sản",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Lấy danh sách Tài sản",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/chia-se/api/v1/tai-san?page=0&size=10",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "chia-se",
+            "api",
+            "v1",
+            "tai-san"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Lấy chi tiết Tài sản (TS-01)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/chia-se/api/v1/tai-san/TS-01",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "chia-se",
+            "api",
+            "v1",
+            "tai-san",
+            "TS-01"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Lịch sử Bàn giao Tài sản (TS-01)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/chia-se/api/v1/tai-san/TS-01/lich-su-ban-giao",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "chia-se",
+            "api",
+            "v1",
+            "tai-san",
+            "TS-01",
+            "lich-su-ban-giao"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Lập Biên bản Bàn giao",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"soBienBan\": \"BB-2024-003\",\r\n  \"loaiBenNhan\": \"CAN_BO\",\r\n  \"idBenNhan\": \"CB-02\",\r\n  \"loaiBenGiao\": \"KHO\",\r\n  \"idBenGiao\": \"KHO_TONG\",\r\n  \"nguoiKyId\": \"CB-01\",\r\n  \"danhSachTaiSanId\": [\r\n    \"TS-03\"\r\n  ]\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/chia-se/api/v1/ban-giao",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "chia-se",
+            "api",
+            "v1",
+            "ban-giao"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Lấy Danh mục",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/chia-se/api/v1/danh-muc/loai-tai-san",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "chia-se",
+            "api",
+            "v1",
+            "danh-muc",
+            "loai-tai-san"
+          ]
+        }
+      },
+    {
+      "name": "6. Tra cứu danh sách Biên bản",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/chia-se/api/v1/ban-giao?page=0&size=10&nguoiKyId=CB-01",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "chia-se",
+            "api",
+            "v1",
+            "ban-giao"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            },
+            {
+              "key": "maDonVi",
+              "value": "DV01"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

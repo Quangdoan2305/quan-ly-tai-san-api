@@ -1,0 +1,1346 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Hệ thống quản lý tài sản và trang thiết bị của cán bộ",
+    "description": "API chia sẻ khai thác thông tin tài sản và hồ sơ cán bộ chiến sĩ qua LGSP.",
+    "contact": {
+      "name": "Ban quản lý hệ thống"
+    },
+    "version": "v1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/chia-se/api",
+      "description": "Local Dev"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "1. Dịch vụ khai thác dữ liệu thông tin cán bộ chiến sĩ qua LGSP",
+      "description": "1. Dịch vụ khai thác dữ liệu thông tin cán bộ chiến sĩ qua LGSP"
+    },
+    {
+      "name": "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP",
+      "description": "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+    },
+    {
+      "name": "3. Dịch vụ chia sẻ dữ liệu danh mục qua LGSP",
+      "description": "3. Dịch vụ chia sẻ dữ liệu danh mục qua LGSP"
+    }
+  ],
+  "paths": {
+    "/v1/can-bo": {
+      "get": {
+        "tags": [
+          "1. Dịch vụ khai thác dữ liệu thông tin cán bộ chiến sĩ qua LGSP"
+        ],
+        "summary": "Lấy danh sách cán bộ chiến sĩ",
+        "operationId": "getCanBo",
+        "parameters": [
+          {
+            "name": "maDonVi",
+            "in": "query",
+            "description": "Mã đơn vị",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Số thứ tự trang (bắt đầu từ 0)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Số lượng bản ghi trên một trang",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy dữ liệu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponsePagingBaseResponseCanBoTomTatResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "API tra cứu danh sách cán bộ chiến sĩ, phục vụ việc chia sẻ khai thác thông tin (có hỗ trợ phân trang)."
+      }
+    },
+    "/v1/can-bo/{id}": {
+      "get": {
+        "tags": [
+          "1. Dịch vụ khai thác dữ liệu thông tin cán bộ chiến sĩ qua LGSP"
+        ],
+        "summary": "Lấy thông tin chi tiết một cán bộ chiến sĩ",
+        "operationId": "getCanBoById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy dữ liệu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponseCanBoChiTietResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "API lấy thông tin chi tiết của một cán bộ chiến sĩ, bao gồm thông tin tài sản được giao."
+      }
+    },
+    "/v1/tai-san": {
+      "get": {
+        "tags": [
+          "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+        ],
+        "summary": "Lấy danh sách tài sản",
+        "operationId": "getTaiSan",
+        "parameters": [
+          {
+            "name": "maDonViQuanLy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maCanBoSuDung",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tinhTrang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Số thứ tự trang (bắt đầu từ 0)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Số lượng bản ghi trên một trang",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy dữ liệu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponsePagingBaseResponseTaiSanDtoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "API tra cứu danh sách tài sản."
+      }
+    },
+    "/v1/tai-san/{id}": {
+      "get": {
+        "tags": [
+          "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+        ],
+        "summary": "Lấy chi tiết tài sản",
+        "operationId": "getTaiSanById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy dữ liệu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponseTaiSanDtoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "API lấy thông tin chi tiết của một tài sản."
+      }
+    },
+    "/v1/tai-san/{id}/lich-su-ban-giao": {
+      "get": {
+        "tags": [
+          "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+        ],
+        "summary": "Lịch sử bàn giao tài sản",
+        "operationId": "getLichSuBanGiao",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Số thứ tự trang (bắt đầu từ 0)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Số lượng bản ghi trên một trang",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy dữ liệu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponsePagingBaseResponseBienBanBanGiaoDtoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "API tra cứu lịch sử bàn giao vòng đời của một tài sản."
+      }
+    },
+    "/v1/ban-giao": {
+      "get": {
+        "tags": [
+          "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+        ],
+        "summary": "Tra cứu danh sách biên bản bàn giao",
+        "operationId": "searchBienBan",
+        "parameters": [
+          {
+            "name": "soBienBan",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tuNgay",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "denNgay",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "loaiBenNhan",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CAN_BO",
+                "DON_VI"
+              ]
+            }
+          },
+          {
+            "name": "idBenNhan",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loaiBenGiao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CAN_BO",
+                "DON_VI",
+                "KHO"
+              ]
+            }
+          },
+          {
+            "name": "idBenGiao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nguoiKyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maDonVi",
+            "in": "query",
+            "description": "Lọc theo đơn vị liên quan (bên giao hoặc bên nhận)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Số thứ tự trang (bắt đầu từ 0)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Số lượng bản ghi trên một trang",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy dữ liệu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponsePagingBaseResponseBienBanBanGiaoDtoResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        },
+        "description": "API tìm kiếm và lọc danh sách các biên bản bàn giao (phục vụ nghiệp vụ văn thư)."
+      },
+      "post": {
+        "tags": [
+          "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP"
+        ],
+        "summary": "Lập biên bản bàn giao tài sản",
+        "operationId": "banGiaoTaiSan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BienBanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lập biên bản thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponseBienBanBanGiaoDtoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "API thực hiện nghiệp vụ bàn giao tài sản."
+      }
+    },
+    "/v1/danh-muc/{loai}": {
+      "get": {
+        "tags": [
+          "3. Dịch vụ chia sẻ dữ liệu danh mục qua LGSP"
+        ],
+        "summary": "Lấy dữ liệu danh mục",
+        "operationId": "getDanhMuc",
+        "parameters": [
+          {
+            "name": "loai",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "dia-gioi-hanh-chinh",
+                "dan-toc",
+                "ton-giao",
+                "don-vi",
+                "loai-tai-san"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Số thứ tự trang (bắt đầu từ 0)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Số lượng bản ghi trên một trang",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy dữ liệu thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainResponsePagingBaseResponseDanhMucResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "API chia sẻ dữ liệu danh mục."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Lỗi dữ liệu đầu vào hoặc không tìm thấy",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BadRequestResponse"
+            },
+            "example": {
+              "title": "Lỗi thao tác",
+              "errorCode": "400",
+              "message": "Dữ liệu đầu vào không hợp lệ hoặc không tìm thấy bản ghi tương ứng",
+              "time": "2024-05-15T10:00:00"
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Lỗi xác thực",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BadRequestResponse"
+            },
+            "example": {
+              "title": "Lỗi xác thực",
+              "errorCode": "401",
+              "message": "Token không hợp lệ",
+              "time": "2024-05-15T10:00:00"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Lỗi hệ thống máy chủ",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BadRequestResponse"
+            },
+            "example": {
+              "title": "Lỗi hệ thống",
+              "errorCode": "500",
+              "message": "Có lỗi xảy ra trong quá trình xử lý trên máy chủ",
+              "time": "2024-05-15T10:00:00"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "BadRequestResponse": {
+        "type": "object",
+        "required": [
+          "title",
+          "errorCode",
+          "message",
+          "time"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Ví dụ title"
+          },
+          "errorCode": {
+            "type": "string",
+            "example": "Ví dụ errorCode"
+          },
+          "message": {
+            "type": "string",
+            "example": "Ví dụ message"
+          },
+          "uri": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Ví dụ uri"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T10:00:00Z"
+          },
+          "requestId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Ví dụ requestId"
+          }
+        }
+      },
+      "CanBoTomTat": {
+        "type": "object",
+        "required": [
+          "id",
+          "maCanBo",
+          "hoTen",
+          "maDonVi",
+          "tenDonVi"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "maCanBo": {
+            "type": "string",
+            "example": "CB001"
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "format": "date",
+            "example": "1990-01-01"
+          },
+          "gioiTinh": {
+            "type": "string",
+            "example": "Nam"
+          },
+          "capBac": {
+            "type": "string",
+            "example": "Đại úy"
+          },
+          "chucVu": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Trưởng phòng"
+          },
+          "maDonVi": {
+            "type": "string",
+            "example": "DV001"
+          },
+          "tenDonVi": {
+            "type": "string",
+            "example": "Phòng Cảnh sát giao thông"
+          },
+          "maCongDan": {
+            "type": "string",
+            "example": "CD-123456"
+          }
+        }
+      },
+      "CanBoChiTiet": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CanBoTomTat"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "danhSachTaiSan": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TaiSanRutGonDto"
+                }
+              },
+              "thongTinCongDan": {
+                "$ref": "#/components/schemas/CongDan"
+              }
+            }
+          }
+        ]
+      },
+      "TaiSanRutGonDto": {
+        "type": "object",
+        "required": [
+          "maTaiSan"
+        ],
+        "properties": {
+          "maTaiSan": {
+            "type": "string",
+            "example": "TS-001"
+          },
+          "tenTaiSan": {
+            "type": "string",
+            "example": "Màn hình Dell 27 inch"
+          },
+          "thongTinChiTiet": {
+            "type": "object",
+            "example": {
+              "doPhanGiai": "4K",
+              "hang": "Dell",
+              "inch": 27
+            }
+          },
+          "maNguoiCapPhat": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "CB002"
+          },
+          "nguoiCapPhat": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Trần Văn B"
+          },
+          "ngayCapPhat": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2024-05-15"
+          }
+        }
+      },
+      "TaiSanDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "maTaiSan"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "maTaiSan": {
+            "type": "string",
+            "example": "TS-001"
+          },
+          "tenTaiSan": {
+            "type": "string",
+            "example": "Màn hình Dell 27 inch"
+          },
+          "maDanhMucLoai": {
+            "type": "string",
+            "example": "LTS01"
+          },
+          "tenLoaiTaiSan": {
+            "type": "string",
+            "example": "Tên loại tài sản"
+          },
+          "thongTinChiTiet": {
+            "type": "object",
+            "example": {
+              "doPhanGiai": "4K",
+              "hang": "Dell",
+              "inch": 27
+            }
+          },
+          "tinhTrang": {
+            "type": "string",
+            "example": "Đang sử dụng"
+          },
+          "maDonViQuanLy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "DV001"
+          },
+          "tenDonViQuanLy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Phòng Cảnh sát giao thông"
+          },
+          "maCanBoSuDung": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "CB001"
+          },
+          "tenCanBoSuDung": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Nguyễn Văn A"
+          },
+          "maNguoiCapPhat": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "CB002"
+          },
+          "nguoiCapPhat": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Trần Văn B"
+          },
+          "ngayCapPhat": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2024-05-15"
+          }
+        }
+      },
+      "BienBanRequest": {
+        "type": "object",
+        "required": [
+          "soBienBan",
+          "loaiBenNhan",
+          "idBenNhan",
+          "loaiBenGiao",
+          "idBenGiao",
+          "danhSachTaiSanId"
+        ],
+        "properties": {
+          "soBienBan": {
+            "type": "string",
+            "example": "BB-2024-001"
+          },
+          "loaiBenNhan": {
+            "type": "string",
+            "enum": [
+              "CAN_BO",
+              "DON_VI"
+            ],
+            "example": "CAN_BO"
+          },
+          "idBenNhan": {
+            "type": "string",
+            "example": "CB001"
+          },
+          "loaiBenGiao": {
+            "type": "string",
+            "enum": [
+              "CAN_BO",
+              "DON_VI",
+              "KHO"
+            ],
+            "example": "KHO"
+          },
+          "idBenGiao": {
+            "type": "string",
+            "example": "KHO_TONG"
+          },
+          "nguoiKyId": {
+            "type": "string",
+            "example": "CB002"
+          },
+          "danhSachTaiSanId": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "TS-03"
+            }
+          }
+        }
+      },
+      "BienBanBanGiaoDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "soBienBan",
+          "ngayBanGiao",
+          "loaiBenNhan",
+          "idBenNhan",
+          "loaiBenGiao",
+          "idBenGiao",
+          "nguoiKyId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "soBienBan": {
+            "type": "string",
+            "example": "BB-2024-001"
+          },
+          "ngayBanGiao": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-05-15"
+          },
+          "loaiBenNhan": {
+            "type": "string",
+            "enum": [
+              "CAN_BO",
+              "DON_VI"
+            ],
+            "example": "DON_VI"
+          },
+          "idBenNhan": {
+            "type": "string",
+            "example": "DV001"
+          },
+          "loaiBenGiao": {
+            "type": "string",
+            "enum": [
+              "CAN_BO",
+              "DON_VI",
+              "KHO"
+            ],
+            "example": "KHO"
+          },
+          "idBenGiao": {
+            "type": "string",
+            "example": "KHO_TONG"
+          },
+          "nguoiKyId": {
+            "type": "string",
+            "example": "CB002"
+          },
+          "danhSachTaiSan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaiSanRutGonDto"
+            }
+          }
+        }
+      },
+      "CongDan": {
+        "type": "object",
+        "required": [
+          "id",
+          "soCccd",
+          "hoTen"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "CD-123456"
+          },
+          "soCccd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Số CCCD (PII)",
+            "example": "001090123456"
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "format": "date",
+            "example": "1990-01-01"
+          },
+          "gioiTinh": {
+            "type": "string",
+            "example": "Nam"
+          },
+          "queQuan": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Hà Nội"
+          },
+          "maDanToc": {
+            "type": "string",
+            "example": "DT01"
+          },
+          "danToc": {
+            "type": "string",
+            "example": "Kinh"
+          },
+          "maTonGiao": {
+            "type": "string",
+            "example": "TG00"
+          },
+          "tonGiao": {
+            "type": "string",
+            "example": "Không"
+          },
+          "maDiaGioiHanhChinhThuongTru": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "01"
+          },
+          "diaChiThuongTru": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Ba Đình, Hà Nội"
+          },
+          "maDiaGioiHanhChinhHienTai": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "01"
+          },
+          "diaChiHienTai": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Ba Đình, Hà Nội"
+          }
+        }
+      },
+      "DanhMuc": {
+        "type": "object",
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "loai"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "ma": {
+            "type": "string",
+            "example": "01"
+          },
+          "ten": {
+            "type": "string",
+            "example": "Thành phố Hà Nội"
+          },
+          "loai": {
+            "type": "string",
+            "enum": [
+              "dia-gioi-hanh-chinh",
+              "dan-toc",
+              "ton-giao",
+              "don-vi",
+              "loai-tai-san"
+            ],
+            "example": "dia-gioi-hanh-chinh"
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "null"
+          },
+          "cap": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 1
+          },
+          "trangThai": {
+            "type": "string",
+            "example": "Hoạt động"
+          }
+        }
+      },
+      "MainResponseCanBoChiTietResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Thành công"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CanBoChiTiet"
+          }
+        }
+      },
+      "MainResponseTaiSanDtoResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Thành công"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TaiSanDto"
+          }
+        }
+      },
+      "MainResponseBienBanBanGiaoDtoResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Thành công"
+          },
+          "data": {
+            "$ref": "#/components/schemas/BienBanBanGiaoDto"
+          }
+        }
+      },
+      "MainResponsePagingBaseResponseCanBoTomTatResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Thành công"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "pageSize": {
+                "type": "integer",
+                "example": 10
+              },
+              "pageNumber": {
+                "type": "integer",
+                "example": 0
+              },
+              "totalPages": {
+                "type": "integer",
+                "example": 1
+              },
+              "totalElements": {
+                "type": "integer",
+                "example": 5
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CanBoTomTat"
+                }
+              }
+            }
+          }
+        }
+      },
+      "MainResponsePagingBaseResponseTaiSanDtoResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Thành công"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "pageSize": {
+                "type": "integer",
+                "example": 10
+              },
+              "pageNumber": {
+                "type": "integer",
+                "example": 0
+              },
+              "totalPages": {
+                "type": "integer",
+                "example": 1
+              },
+              "totalElements": {
+                "type": "integer",
+                "example": 5
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TaiSanDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "MainResponsePagingBaseResponseBienBanBanGiaoDtoResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Thành công"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "pageSize": {
+                "type": "integer",
+                "example": 10
+              },
+              "pageNumber": {
+                "type": "integer",
+                "example": 0
+              },
+              "totalPages": {
+                "type": "integer",
+                "example": 1
+              },
+              "totalElements": {
+                "type": "integer",
+                "example": 5
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/BienBanBanGiaoDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "MainResponsePagingBaseResponseDanhMucResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Thành công"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "pageSize": {
+                "type": "integer",
+                "example": 10
+              },
+              "pageNumber": {
+                "type": "integer",
+                "example": 0
+              },
+              "totalPages": {
+                "type": "integer",
+                "example": 1
+              },
+              "totalElements": {
+                "type": "integer",
+                "example": 5
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DanhMuc"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

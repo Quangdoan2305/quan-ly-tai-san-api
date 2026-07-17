@@ -887,7 +887,7 @@
           "idBenNhan",
           "loaiBenGiao",
           "idBenGiao",
-          "danhSachTaiSanId"
+          "chiTietTaiSan"
         ],
         "properties": {
           "soBienBan": {
@@ -923,11 +923,17 @@
             "type": "string",
             "example": "CB002"
           },
-          "danhSachTaiSanId": {
+          "fileDinhKem": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "/files/bb-01.pdf"
+          },
+          "chiTietTaiSan": {
             "type": "array",
             "items": {
-              "type": "string",
-              "example": "TS-03"
+              "$ref": "#/components/schemas/ChiTietBienBanRequestDto"
             }
           }
         }
@@ -942,7 +948,8 @@
           "idBenNhan",
           "loaiBenGiao",
           "idBenGiao",
-          "nguoiKyId"
+          "nguoiKyId",
+          "chiTietTaiSan"
         ],
         "properties": {
           "id": {
@@ -987,11 +994,69 @@
             "type": "string",
             "example": "CB002"
           },
-          "danhSachTaiSan": {
+          "fileDinhKem": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "/files/bb-01.pdf"
+          },
+          "chiTietTaiSan": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaiSanRutGonDto"
+              "$ref": "#/components/schemas/ChiTietBienBanDto"
             }
+          }
+        }
+      },
+      "ChiTietBienBanRequestDto": {
+        "type": "object",
+        "required": [
+          "taiSanId"
+        ],
+        "properties": {
+          "taiSanId": {
+            "type": "string",
+            "example": "TS-01"
+          },
+          "tinhTrangLucGiao": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Mới 100%"
+          },
+          "ghiChu": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Giao từ Phòng cho đ/c Bình"
+          }
+        }
+      },
+      "ChiTietBienBanDto": {
+        "type": "object",
+        "required": [
+          "taiSan"
+        ],
+        "properties": {
+          "taiSan": {
+            "$ref": "#/components/schemas/TaiSanRutGonDto"
+          },
+          "tinhTrangLucGiao": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Mới 100%"
+          },
+          "ghiChu": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Giao từ Phòng cho đ/c Bình"
           }
         }
       },

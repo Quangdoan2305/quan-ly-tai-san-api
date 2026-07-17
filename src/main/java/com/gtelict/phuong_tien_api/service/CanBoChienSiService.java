@@ -39,8 +39,8 @@ public class CanBoChienSiService {
         chiTiet.setMaCanBo(entity.getMaCanBo());
         chiTiet.setCapBac(entity.getCapBac());
         chiTiet.setChucVu(entity.getChucVu());
-        chiTiet.setMaDonVi(entity.getMaDonVi());
-        chiTiet.setTenDonVi(getTenDanhMuc(entity.getMaDonVi()));
+        chiTiet.setMaDonVi(entity.getIdDonVi());
+        chiTiet.setTenDonVi(getTenDanhMuc(entity.getIdDonVi()));
         
         if (entity.getCongDan() != null) {
             chiTiet.setHoTen(entity.getCongDan().getHoTen());
@@ -50,7 +50,7 @@ public class CanBoChienSiService {
         }
         chiTiet.setThongTinCongDan(entity.getCongDan());
 
-        List<TaiSan> taiSans = taiSanRepo.findByMaCanBoSuDung(entity.getId());
+        List<TaiSan> taiSans = taiSanRepo.findByIdCanBoSuDung(entity.getId());
         chiTiet.setDanhSachTaiSan(taiSans.stream().map(ts -> {
             TaiSanRutGonDto rg = new TaiSanRutGonDto();
             rg.setMaTaiSan(ts.getMaTaiSan());
@@ -68,8 +68,8 @@ public class CanBoChienSiService {
         tomTat.setMaCanBo(entity.getMaCanBo());
         tomTat.setCapBac(entity.getCapBac());
         tomTat.setChucVu(entity.getChucVu());
-        tomTat.setMaDonVi(entity.getMaDonVi());
-        tomTat.setTenDonVi(getTenDanhMuc(entity.getMaDonVi()));
+        tomTat.setMaDonVi(entity.getIdDonVi());
+        tomTat.setTenDonVi(getTenDanhMuc(entity.getIdDonVi()));
         if (entity.getCongDan() != null) {
             tomTat.setHoTen(entity.getCongDan().getHoTen());
             tomTat.setNgaySinh(entity.getCongDan().getNgaySinh());

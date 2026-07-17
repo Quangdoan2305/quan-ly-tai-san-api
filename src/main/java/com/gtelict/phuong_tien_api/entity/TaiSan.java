@@ -16,7 +16,7 @@ public class TaiSan {
     
     private String maTaiSan;
     private String tenTaiSan;
-    private String maDanhMucLoai;
+    private String idDanhMucLoai;
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
@@ -24,9 +24,9 @@ public class TaiSan {
     
     private String tinhTrang;
     
-    private String maDonViQuanLy;
-    private String maCanBoSuDung;
-    private String maNguoiCapPhat;
+    private String idDonViQuanLy;
+    private String idCanBoSuDung;
+    private String idNguoiCapPhat;
     private java.time.LocalDate ngayCapPhat;
 
 }

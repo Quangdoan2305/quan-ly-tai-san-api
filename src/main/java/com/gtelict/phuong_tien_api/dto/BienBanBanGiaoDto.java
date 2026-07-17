@@ -31,5 +31,7 @@ public class BienBanBanGiaoDto {
     @Schema(example = "CB002")
     private String nguoiKyId;
     
-    private List<TaiSanRutGonDto> danhSachTaiSan;
+    private String fileDinhKem;
+    
+    private List<ChiTietBienBanDto> chiTietTaiSan;
 }

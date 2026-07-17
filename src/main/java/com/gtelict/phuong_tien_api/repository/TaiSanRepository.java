@@ -14,14 +14,14 @@ import java.util.List;
 public interface TaiSanRepository extends JpaRepository<TaiSan, String> {
     
     @Query("SELECT t FROM TaiSan t WHERE " +
-           "(:maDonViQuanLy IS NULL OR t.maDonViQuanLy = :maDonViQuanLy) AND " +
-           "(:maCanBoSuDung IS NULL OR t.maCanBoSuDung = :maCanBoSuDung) AND " +
+           "(:idDonViQuanLy IS NULL OR t.idDonViQuanLy = :idDonViQuanLy) AND " +
+           "(:idCanBoSuDung IS NULL OR t.idCanBoSuDung = :idCanBoSuDung) AND " +
            "(:tinhTrang IS NULL OR t.tinhTrang = :tinhTrang)")
-    Page<TaiSan> search(@Param("maDonViQuanLy") String maDonViQuanLy,
-                        @Param("maCanBoSuDung") String maCanBoSuDung,
+    Page<TaiSan> search(@Param("idDonViQuanLy") String idDonViQuanLy,
+                        @Param("idCanBoSuDung") String idCanBoSuDung,
                         @Param("tinhTrang") String tinhTrang,
                         Pageable pageable);
                         
-    List<TaiSan> findByMaCanBoSuDung(String maCanBoSuDung);
-    List<TaiSan> findByMaDonViQuanLy(String maDonViQuanLy);
+    List<TaiSan> findByIdCanBoSuDung(String idCanBoSuDung);
+    List<TaiSan> findByIdDonViQuanLy(String idDonViQuanLy);
 }

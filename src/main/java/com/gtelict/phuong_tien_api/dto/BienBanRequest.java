@@ -24,6 +24,8 @@ public class BienBanRequest {
     @Schema(example = "CB002")
     private String nguoiKyId;
     
-    @Schema(description = "Danh sách ID tài sản bàn giao")
-    private List<String> danhSachTaiSanId;
+    private String fileDinhKem;
+    
+    @Schema(description = "Danh sách tài sản bàn giao kèm tình trạng")
+    private List<ChiTietBienBanRequestDto> chiTietTaiSan;
 }

@@ -52,25 +52,31 @@ public class TaiSanService {
         bienBanRepo.save(bb);
 
         // 2. Xử lý từng tài sản & Lưu chi tiết biên bản
-        List<TaiSan> taiSans = taiSanRepo.findAllById(request.getDanhSachTaiSanId());
-        for (TaiSan ts : taiSans) {
+        List<String> taiSanIds = request.getChiTietTaiSan().stream().map(ChiTietBienBanRequestDto::getTaiSanId).collect(Collectors.toList());
+        List<TaiSan> taiSans = taiSanRepo.findAllById(taiSanIds);
+        
+        for (ChiTietBienBanRequestDto ctReq : request.getChiTietTaiSan()) {
+            TaiSan ts = taiSans.stream().filter(t -> t.getId().equals(ctReq.getTaiSanId())).findFirst().orElse(null);
+            if (ts == null) continue;
+            
             // Update ownership
             if ("DON_VI".equals(request.getLoaiBenNhan())) {
-                ts.setMaDonViQuanLy(request.getIdBenNhan());
-                ts.setMaCanBoSuDung(null); // Giao cho đơn vị thì cá nhân không còn cầm
+                ts.setIdDonViQuanLy(request.getIdBenNhan());
+                ts.setIdCanBoSuDung(null); // Giao cho đơn vị thì cá nhân không còn cầm
             } else if ("CAN_BO".equals(request.getLoaiBenNhan())) {
-                ts.setMaCanBoSuDung(request.getIdBenNhan());
-                // Không sửa maDonViQuanLy vì tài sản vẫn thuộc kho của đơn vị đó
+                ts.setIdCanBoSuDung(request.getIdBenNhan());
+                // Không sửa idDonViQuanLy vì tài sản vẫn thuộc kho của đơn vị đó
             }
             
-            ts.setMaNguoiCapPhat(request.getNguoiKyId());
+            ts.setIdNguoiCapPhat(request.getNguoiKyId());
             ts.setNgayCapPhat(LocalDate.now());
             
             ChiTietBienBan ct = new ChiTietBienBan();
             ct.setId(UUID.randomUUID().toString());
             ct.setBienBanId(bb.getId());
             ct.setTaiSanId(ts.getId());
-            ct.setTinhTrangLucGiao(ts.getTinhTrang());
+            ct.setTinhTrangLucGiao(ctReq.getTinhTrangLucGiao());
+            ct.setGhiChu(ctReq.getGhiChu());
             chiTietRepo.save(ct);
         }
         taiSanRepo.saveAll(taiSans);
@@ -85,16 +91,24 @@ public class TaiSanService {
         dto.setLoaiBenGiao(bb.getLoaiBenGiao());
         dto.setIdBenGiao(bb.getIdBenGiao());
         dto.setNguoiKyId(bb.getNguoiKyId());
+        dto.setFileDinhKem(bb.getFileDinhKem());
         
-        dto.setDanhSachTaiSan(taiSans.stream().map(ts -> {
-            TaiSanRutGonDto rg = new TaiSanRutGonDto();
-            rg.setMaTaiSan(ts.getMaTaiSan());
-            rg.setTenTaiSan(ts.getTenTaiSan());
-            rg.setThongTinChiTiet(ts.getThongTinChiTiet());
-            rg.setMaNguoiCapPhat(ts.getMaNguoiCapPhat());
-            rg.setNgayCapPhat(ts.getNgayCapPhat());
-            if (ts.getMaNguoiCapPhat() != null) rg.setNguoiCapPhat("Tên " + ts.getMaNguoiCapPhat());
-            return rg;
+        dto.setChiTietTaiSan(request.getChiTietTaiSan().stream().map(ctReq -> {
+            TaiSan ts = taiSans.stream().filter(t -> t.getId().equals(ctReq.getTaiSanId())).findFirst().orElse(null);
+            ChiTietBienBanDto ctDto = new ChiTietBienBanDto();
+            ctDto.setTinhTrangLucGiao(ctReq.getTinhTrangLucGiao());
+            ctDto.setGhiChu(ctReq.getGhiChu());
+            if (ts != null) {
+                TaiSanRutGonDto rg = new TaiSanRutGonDto();
+                rg.setMaTaiSan(ts.getMaTaiSan());
+                rg.setTenTaiSan(ts.getTenTaiSan());
+                rg.setThongTinChiTiet(ts.getThongTinChiTiet());
+                rg.setMaNguoiCapPhat(ts.getIdNguoiCapPhat());
+                rg.setNgayCapPhat(ts.getNgayCapPhat());
+                if (ts.getIdNguoiCapPhat() != null) rg.setNguoiCapPhat("Tên " + ts.getIdNguoiCapPhat());
+                ctDto.setTaiSan(rg);
+            }
+            return ctDto;
         }).collect(Collectors.toList()));
         
         return dto;
@@ -105,19 +119,19 @@ public class TaiSanService {
         dto.setId(ts.getId());
         dto.setMaTaiSan(ts.getMaTaiSan());
         dto.setTenTaiSan(ts.getTenTaiSan());
-        dto.setMaDanhMucLoai(ts.getMaDanhMucLoai());
-        if (ts.getMaDanhMucLoai() != null) dto.setTenLoaiTaiSan("Tên loại " + ts.getMaDanhMucLoai());
+        dto.setMaDanhMucLoai(ts.getIdDanhMucLoai());
+        if (ts.getIdDanhMucLoai() != null) dto.setTenLoaiTaiSan("Tên loại " + ts.getIdDanhMucLoai());
         dto.setThongTinChiTiet(ts.getThongTinChiTiet());
         dto.setTinhTrang(ts.getTinhTrang());
         
-        dto.setMaDonViQuanLy(ts.getMaDonViQuanLy());
-        if (ts.getMaDonViQuanLy() != null) dto.setTenDonViQuanLy("Tên đơn vị " + ts.getMaDonViQuanLy());
+        dto.setMaDonViQuanLy(ts.getIdDonViQuanLy());
+        if (ts.getIdDonViQuanLy() != null) dto.setTenDonViQuanLy("Tên đơn vị " + ts.getIdDonViQuanLy());
         
-        dto.setMaCanBoSuDung(ts.getMaCanBoSuDung());
-        if (ts.getMaCanBoSuDung() != null) dto.setTenCanBoSuDung("Tên cán bộ " + ts.getMaCanBoSuDung());
+        dto.setMaCanBoSuDung(ts.getIdCanBoSuDung());
+        if (ts.getIdCanBoSuDung() != null) dto.setTenCanBoSuDung("Tên cán bộ " + ts.getIdCanBoSuDung());
         
-        dto.setMaNguoiCapPhat(ts.getMaNguoiCapPhat());
-        if (ts.getMaNguoiCapPhat() != null) dto.setNguoiCapPhat("Tên người cấp phát " + ts.getMaNguoiCapPhat());
+        dto.setMaNguoiCapPhat(ts.getIdNguoiCapPhat());
+        if (ts.getIdNguoiCapPhat() != null) dto.setNguoiCapPhat("Tên người cấp phát " + ts.getIdNguoiCapPhat());
         dto.setNgayCapPhat(ts.getNgayCapPhat());
         
         return dto;
@@ -142,6 +156,7 @@ public class TaiSanService {
             dto.setLoaiBenGiao(bb.getLoaiBenGiao());
             dto.setIdBenGiao(bb.getIdBenGiao());
             dto.setNguoiKyId(bb.getNguoiKyId());
+            dto.setFileDinhKem(bb.getFileDinhKem());
             return dto;
         }).collect(Collectors.toList()));
         
@@ -167,6 +182,7 @@ public class TaiSanService {
             dto.setLoaiBenGiao(bb.getLoaiBenGiao());
             dto.setIdBenGiao(bb.getIdBenGiao());
             dto.setNguoiKyId(bb.getNguoiKyId());
+            dto.setFileDinhKem(bb.getFileDinhKem());
             return dto;
         }).collect(Collectors.toList()));
         

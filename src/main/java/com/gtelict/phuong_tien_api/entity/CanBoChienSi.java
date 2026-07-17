@@ -11,9 +11,9 @@ public class CanBoChienSi {
     private String maCanBo;
     private String capBac;
     private String chucVu;
-    private String maDonVi;
+    private String idDonVi;
     
     @OneToOne
-    @JoinColumn(name = "ma_cong_dan", referencedColumnName = "id")
+    @JoinColumn(name = "id_cong_dan", referencedColumnName = "id")
     private CongDan congDan;
 }

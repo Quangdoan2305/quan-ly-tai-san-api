@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface CanBoChienSiRepository extends JpaRepository<CanBoChienSi, String> {
     
     @Query("SELECT c FROM CanBoChienSi c WHERE " +
-           "(:maDonVi IS NULL OR c.maDonVi = :maDonVi) AND " +
+           "(:maDonVi IS NULL OR c.idDonVi = :maDonVi) AND " +
            "(:maCanBo IS NULL OR c.maCanBo = :maCanBo) AND " +
            "(:capBac IS NULL OR c.capBac = :capBac) AND " +
            "(:hoTen IS NULL OR c.congDan.hoTen LIKE %:hoTen%) AND " +

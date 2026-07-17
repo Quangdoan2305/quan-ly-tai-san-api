@@ -71,24 +71,21 @@ public class ApiController {
 
     @Tag(name = "2. Dịch vụ quản lý tài sản & trang thiết bị")
     @Operation(summary = "Lập biên bản bàn giao tài sản", description = "Ghi nhận việc luân chuyển tài sản giữa kho tổng, đơn vị, và cá nhân.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Thành công"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dữ liệu đầu vào không hợp lệ", content = @io.swagger.v3.oas.annotations.media.Content(schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ResponseData.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Xung đột dữ liệu (VD: Trùng mã số biên bản)", content = @io.swagger.v3.oas.annotations.media.Content(schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ResponseData.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Lỗi hệ thống", content = @io.swagger.v3.oas.annotations.media.Content(schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ResponseData.class)))
+    })
     @PostMapping("/ban-giao")
-    public ResponseData<?> banGiaoTaiSan(@RequestBody BienBanRequest request) {
-        try {
-            return new ResponseData<>(taiSanService.banGiaoTaiSan(request));
-        } catch (Exception e) {
-            java.io.StringWriter sw = new java.io.StringWriter();
-            e.printStackTrace(new java.io.PrintWriter(sw));
-            ResponseData<String> err = new ResponseData<>(null);
-            err.setCode("ERROR");
-            err.setMessage(sw.toString());
-            return err;
-        }
+    public ResponseData<BienBanBanGiaoDto> banGiaoTaiSan(@RequestBody BienBanRequest request) {
+        return new ResponseData<>(taiSanService.banGiaoTaiSan(request));
     }
 
     @Tag(name = "2. Dịch vụ khai thác dữ liệu thông tin tài sản qua LGSP")
     @Operation(summary = "Tra cứu danh sách biên bản bàn giao", description = "API tìm kiếm và lọc danh sách các biên bản bàn giao (phục vụ nghiệp vụ văn thư).")
     @GetMapping("/ban-giao")
-    public ResponseData<?> searchBienBan(
+    public ResponseData<PageResponse<BienBanBanGiaoDto>> searchBienBan(
             @RequestParam(required = false) String soBienBan,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate tuNgay,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate denNgay,
@@ -101,16 +98,7 @@ public class ApiController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        try {
-            return new ResponseData<>(taiSanService.searchBienBan(soBienBan, tuNgay, denNgay, loaiBenNhan, idBenNhan, loaiBenGiao, idBenGiao, nguoiKyId, maDonVi, PageRequest.of(page, size)));
-        } catch (Exception e) {
-            java.io.StringWriter sw = new java.io.StringWriter();
-            e.printStackTrace(new java.io.PrintWriter(sw));
-            ResponseData<String> err = new ResponseData<>(null);
-            err.setCode("ERROR");
-            err.setMessage(sw.toString());
-            return err;
-        }
+        return new ResponseData<>(taiSanService.searchBienBan(soBienBan, tuNgay, denNgay, loaiBenNhan, idBenNhan, loaiBenGiao, idBenGiao, nguoiKyId, maDonVi, PageRequest.of(page, size)));
     }
 
     @Tag(name = "3. Dịch vụ chia sẻ dữ liệu danh mục qua LGSP")

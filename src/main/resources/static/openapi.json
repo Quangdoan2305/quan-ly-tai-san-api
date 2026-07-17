@@ -486,6 +486,31 @@
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
+          "409": {
+            "description": "Xung đột dữ liệu (Conflict). Xảy ra khi dữ liệu thêm mới bị trùng lặp mã số (ví dụ: so_bien_ban đã tồn tại).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "DUPLICATE_OR_CONSTRAINT_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Dữ liệu đã tồn tại hoặc vi phạm ràng buộc cơ sở dữ liệu: Key (so_bien_ban)=(BB-NEW-001) already exists."
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }

@@ -164,17 +164,49 @@ public class TaiSanService {
     }
 
     public PageResponse<BienBanBanGiaoDto> searchBienBan(String soBienBan, LocalDate tuNgay, LocalDate denNgay, String loaiBenNhan, String idBenNhan, String loaiBenGiao, String idBenGiao, String nguoiKyId, String maDonVi, Pageable pageable) {
-        soBienBan = soBienBan == null ? "" : soBienBan;
-        tuNgay = tuNgay == null ? LocalDate.of(1900, 1, 1) : tuNgay;
-        denNgay = denNgay == null ? LocalDate.of(2100, 1, 1) : denNgay;
-        loaiBenNhan = loaiBenNhan == null ? "" : loaiBenNhan;
-        idBenNhan = idBenNhan == null ? "" : idBenNhan;
-        loaiBenGiao = loaiBenGiao == null ? "" : loaiBenGiao;
-        idBenGiao = idBenGiao == null ? "" : idBenGiao;
-        nguoiKyId = nguoiKyId == null ? "" : nguoiKyId;
-        maDonVi = maDonVi == null ? "" : maDonVi;
+        org.springframework.data.jpa.domain.Specification<BienBanBanGiao> spec = (root, query, cb) -> {
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            
+            if (soBienBan != null && !soBienBan.trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("soBienBan")), "%" + soBienBan.trim().toLowerCase() + "%"));
+            }
+            if (tuNgay != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("ngayBanGiao"), tuNgay));
+            }
+            if (denNgay != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("ngayBanGiao"), denNgay));
+            }
+            if (loaiBenNhan != null && !loaiBenNhan.isEmpty()) {
+                predicates.add(cb.equal(root.get("loaiBenNhan"), loaiBenNhan));
+            }
+            if (idBenNhan != null && !idBenNhan.isEmpty()) {
+                predicates.add(cb.equal(root.get("idBenNhan"), idBenNhan));
+            }
+            if (loaiBenGiao != null && !loaiBenGiao.isEmpty()) {
+                predicates.add(cb.equal(root.get("loaiBenGiao"), loaiBenGiao));
+            }
+            if (idBenGiao != null && !idBenGiao.isEmpty()) {
+                predicates.add(cb.equal(root.get("idBenGiao"), idBenGiao));
+            }
+            if (nguoiKyId != null && !nguoiKyId.isEmpty()) {
+                predicates.add(cb.equal(root.get("nguoiKyId"), nguoiKyId));
+            }
+            if (maDonVi != null && !maDonVi.isEmpty()) {
+                jakarta.persistence.criteria.Predicate p1 = cb.and(
+                    cb.equal(root.get("loaiBenNhan"), "DON_VI"),
+                    cb.equal(root.get("idBenNhan"), maDonVi)
+                );
+                jakarta.persistence.criteria.Predicate p2 = cb.and(
+                    cb.equal(root.get("loaiBenGiao"), "DON_VI"),
+                    cb.equal(root.get("idBenGiao"), maDonVi)
+                );
+                predicates.add(cb.or(p1, p2));
+            }
+            
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
 
-        Page<BienBanBanGiao> page = bienBanRepo.search(soBienBan, tuNgay, denNgay, loaiBenNhan, idBenNhan, loaiBenGiao, idBenGiao, nguoiKyId, maDonVi, pageable);
+        Page<BienBanBanGiao> page = bienBanRepo.findAll(spec, pageable);
         
         PageResponse<BienBanBanGiaoDto> response = new PageResponse<>();
         response.setPageSize(page.getSize());

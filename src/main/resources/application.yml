@@ -27,5 +27,9 @@ server:
 
 springdoc:
   swagger-ui:
-    disable-swagger-default-url: true
-    url: /custom-swagger.json
+    doc-expansion: list
+    default-models-expand-depth: 1
+    default-model-expand-depth: 1
+    tags-sorter: alpha
+    operations-sorter: method
+    display-request-duration: true

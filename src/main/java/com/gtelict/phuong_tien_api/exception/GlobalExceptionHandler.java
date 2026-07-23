@@ -38,8 +38,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(PessimisticLockingFailureException.class)
-    public ResponseEntity<ErrorResponseDto> handlePessimisticLockingFailureException(PessimisticLockingFailureException ex, HttpServletRequest request) {
+    @ExceptionHandler({PessimisticLockingFailureException.class, jakarta.persistence.LockTimeoutException.class, jakarta.persistence.PessimisticLockException.class, org.springframework.dao.CannotAcquireLockException.class})
+    public ResponseEntity<ErrorResponseDto> handlePessimisticLockingFailureException(Exception ex, HttpServletRequest request) {
         ErrorResponseDto response = new ErrorResponseDto("Hệ thống đang bận", "409", "Tài sản đang được xử lý bởi một giao dịch khác. Vui lòng thử lại sau giây lát!", request.getRequestURI(), LocalDateTime.now(), null);
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }

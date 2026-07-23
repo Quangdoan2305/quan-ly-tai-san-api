@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "PT_CAN_BO_CHIEN_SI")
+@Table(name = "pt_can_bo_chien_si")
 @Data
 public class CanBoChienSi {
     @Id
@@ -11,9 +11,12 @@ public class CanBoChienSi {
     private String maCanBo;
     private String capBac;
     private String chucVu;
-    private String idDonVi;
     
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_don_vi")
+    private DonVi donVi;
+    
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cong_dan", referencedColumnName = "id")
     private CongDan congDan;
 }

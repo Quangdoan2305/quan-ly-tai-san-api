@@ -8,7 +8,8 @@ import org.hibernate.type.SqlTypes;
 import java.util.Map;
 
 @Entity
-@Table(name = "PT_TAI_SAN")
+@Table(name = "pt_tai_san")
+@Inheritance(strategy = InheritanceType.JOINED)
 @Data
 public class TaiSan {
     @Id
@@ -16,7 +17,10 @@ public class TaiSan {
     
     private String maTaiSan;
     private String tenTaiSan;
-    private String idDanhMucLoai;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_loai_tai_san")
+    private LoaiTaiSan loaiTaiSan;
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
@@ -24,9 +28,17 @@ public class TaiSan {
     
     private String tinhTrang;
     
-    private String idDonViQuanLy;
-    private String idCanBoSuDung;
-    private String idNguoiCapPhat;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_don_vi_quan_ly")
+    private DonVi donViQuanLy;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_can_bo_su_dung")
+    private CanBoChienSi canBoSuDung;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_nguoi_cap_phat")
+    private CanBoChienSi nguoiCapPhat;
+    
     private java.time.LocalDate ngayCapPhat;
-
 }

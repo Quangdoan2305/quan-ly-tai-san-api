@@ -22,6 +22,10 @@ public class TaiSanService {
     private BienBanBanGiaoRepository bienBanRepo;
     @Autowired
     private ChiTietBienBanRepository chiTietRepo;
+    @Autowired
+    private DonViRepository donViRepo;
+    @Autowired
+    private CanBoChienSiRepository canBoRepo;
 
     public PageResponse<TaiSanDto> search(String tuKhoa, String maDonViQuanLy, String maCanBoSuDung, String tinhTrang, Pageable pageable) {
         String safeTuKhoa = (tuKhoa == null || tuKhoa.trim().isEmpty()) ? "" : tuKhoa.trim();
@@ -29,7 +33,7 @@ public class TaiSanService {
         String safeMaCanBo = (maCanBoSuDung == null) ? "" : maCanBoSuDung.trim();
         String safeTinhTrang = (tinhTrang == null) ? "" : tinhTrang.trim();
         
-        Page<TaiSan> page = taiSanRepo.searchNative(safeTuKhoa, safeMaDonVi, safeMaCanBo, safeTinhTrang, pageable);
+        Page<TaiSan> page = taiSanRepo.search(safeTuKhoa, safeMaDonVi, safeMaCanBo, safeTinhTrang, pageable);
         
         PageResponse<TaiSanDto> response = new PageResponse<>();
         response.setPageSize(page.getSize());
@@ -41,8 +45,8 @@ public class TaiSanService {
     }
 
     public TaiSanDto getChiTiet(String id) {
-        TaiSan ts = taiSanRepo.findById(id).orElse(null);
-        return ts != null ? mapToDto(ts) : null;
+        TaiSan ts = taiSanRepo.findById(id).orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Không tìm thấy tài sản có ID: " + id));
+        return mapToDto(ts);
     }
 
     @Transactional
@@ -76,23 +80,47 @@ public class TaiSanService {
 
         // 2. Xử lý từng tài sản & Lưu chi tiết biên bản
         List<String> taiSanIds = request.getChiTietTaiSan().stream().map(ChiTietBienBanRequestDto::getTaiSanId).collect(Collectors.toList());
-        List<TaiSan> taiSans = taiSanRepo.findAllWithLockByIdIn(taiSanIds);
+        java.util.Set<String> uniqueIds = new java.util.HashSet<>(taiSanIds);
+        if (uniqueIds.size() != taiSanIds.size()) {
+            throw new IllegalArgumentException("Danh sách tài sản trong biên bản bị trùng lặp!");
+        }
+
+        taiSanRepo.lockTaiSanIds(taiSanIds);
+        List<TaiSan> taiSans = taiSanRepo.findAllByIdWithSubclass(taiSanIds);
+        
+        if (taiSans.size() != taiSanIds.size()) {
+            throw new jakarta.persistence.EntityNotFoundException("Một hoặc nhiều tài sản trong danh sách không tồn tại!");
+        }
+        
+        DonVi donViNhan = "DON_VI".equals(request.getLoaiBenNhan()) ? donViRepo.findById(request.getIdBenNhan()).orElse(null) : null;
+        CanBoChienSi canBoNhan = "CAN_BO".equals(request.getLoaiBenNhan()) ? canBoRepo.findById(request.getIdBenNhan()).orElse(null) : null;
+        CanBoChienSi nguoiKy = null;
+        if ("DA_KY".equals(request.getTrangThai()) && request.getNguoiKyId() != null) {
+            nguoiKy = canBoRepo.findById(request.getNguoiKyId()).orElse(null);
+        }
 
         for (ChiTietBienBanRequestDto ctReq : request.getChiTietTaiSan()) {
             TaiSan ts = taiSans.stream().filter(t -> t.getId().equals(ctReq.getTaiSanId())).findFirst().orElse(null);
-            if (ts == null) continue;
+            if (ts == null) {
+                throw new IllegalArgumentException("Không tìm thấy tài sản có mã ID: " + ctReq.getTaiSanId());
+            }
 
-            // [B6 Fix]: Kiểm tra quyền sở hữu trước khi bàn giao
+            // Kiểm tra tình trạng tài sản không cho phép bàn giao
+            if ("DA_THANH_LY".equals(ts.getTinhTrang()) || "HONG".equals(ts.getTinhTrang())) {
+                throw new IllegalArgumentException("Tài sản " + ts.getMaTaiSan() + " đang ở trạng thái " + ts.getTinhTrang() + ", không được phép bàn giao!");
+            }
+
+            // Kiểm tra quyền sở hữu trước khi bàn giao
             if ("CAN_BO".equals(request.getLoaiBenGiao())) {
-                if (ts.getIdCanBoSuDung() == null || !ts.getIdCanBoSuDung().equals(request.getIdBenGiao())) {
+                if (ts.getCanBoSuDung() == null || !ts.getCanBoSuDung().getId().equals(request.getIdBenGiao())) {
                     throw new IllegalArgumentException("Tài sản " + ts.getMaTaiSan() + " không do cán bộ này sử dụng, không thể bàn giao!");
                 }
             } else if ("DON_VI".equals(request.getLoaiBenGiao())) {
-                if (ts.getIdDonViQuanLy() == null || !ts.getIdDonViQuanLy().equals(request.getIdBenGiao())) {
+                if (ts.getDonViQuanLy() == null || !ts.getDonViQuanLy().getId().equals(request.getIdBenGiao())) {
                     throw new IllegalArgumentException("Tài sản " + ts.getMaTaiSan() + " không thuộc quản lý của đơn vị này, không thể bàn giao!");
                 }
             } else if ("KHO".equals(request.getLoaiBenGiao())) {
-                if (ts.getIdDonViQuanLy() != null || ts.getIdCanBoSuDung() != null) {
+                if (ts.getDonViQuanLy() != null || ts.getCanBoSuDung() != null) {
                     throw new IllegalArgumentException("Tài sản " + ts.getMaTaiSan() + " đã có đơn vị/cán bộ quản lý, không thể xuất từ Kho tổng!");
                 }
             }
@@ -100,12 +128,16 @@ public class TaiSanService {
             // Nếu đã ký thì cập nhật ownership thật, còn nháp thì không cập nhật
             if ("DA_KY".equals(request.getTrangThai())) {
                 if ("DON_VI".equals(request.getLoaiBenNhan())) {
-                    ts.setIdDonViQuanLy(request.getIdBenNhan());
-                    ts.setIdCanBoSuDung(null);
+                    ts.setDonViQuanLy(donViNhan);
+                    ts.setCanBoSuDung(null);
                 } else if ("CAN_BO".equals(request.getLoaiBenNhan())) {
-                    ts.setIdCanBoSuDung(request.getIdBenNhan());
+                    ts.setCanBoSuDung(canBoNhan);
+                    ts.setDonViQuanLy(null);
+                } else if ("KHO".equals(request.getLoaiBenNhan())) {
+                    ts.setDonViQuanLy(null);
+                    ts.setCanBoSuDung(null);
                 }
-                ts.setIdNguoiCapPhat(request.getNguoiKyId());
+                ts.setNguoiCapPhat(nguoiKy);
                 ts.setNgayCapPhat(LocalDate.now());
             }
 
@@ -122,45 +154,11 @@ public class TaiSanService {
             taiSanRepo.saveAll(taiSans);
         }
 
-        // 3. Trả về DTO
-        BienBanBanGiaoDto dto = new BienBanBanGiaoDto();
-        dto.setId(bb.getId());
-        dto.setSoBienBan(bb.getSoBienBan());
-        dto.setNgayBanGiao(bb.getNgayBanGiao());
-        dto.setLoaiBenNhan(bb.getLoaiBenNhan());
-        dto.setIdBenNhan(bb.getIdBenNhan());
-        dto.setLoaiBenGiao(bb.getLoaiBenGiao());
-        dto.setIdBenGiao(bb.getIdBenGiao());
-        dto.setNguoiKyId(bb.getNguoiKyId());
-        dto.setNguoiLapId(bb.getNguoiLapId());
-        dto.setTrangThai(bb.getTrangThai());
-        dto.setFileDinhKem(bb.getFileDinhKem());
-
-        dto.setChiTietTaiSan(request.getChiTietTaiSan().stream().map(ctReq -> {
-            TaiSan ts = taiSans.stream().filter(t -> t.getId().equals(ctReq.getTaiSanId())).findFirst().orElse(null);
-            ChiTietBienBanDto ctDto = new ChiTietBienBanDto();
-            ctDto.setTinhTrangLucGiao(ctReq.getTinhTrangLucGiao());
-            ctDto.setGhiChu(ctReq.getGhiChu());
-            if (ts != null) {
-                TaiSanRutGonDto rg = new TaiSanRutGonDto();
-                rg.setMaTaiSan(ts.getMaTaiSan());
-                rg.setTenTaiSan(ts.getTenTaiSan());
-                rg.setThongTinChiTiet(ts.getThongTinChiTiet());
-                rg.setMaNguoiCapPhat(ts.getIdNguoiCapPhat());
-                rg.setNgayCapPhat(ts.getNgayCapPhat());
-                if (ts.getIdNguoiCapPhat() != null)
-                    rg.setNguoiCapPhat("Tên " + ts.getIdNguoiCapPhat());
-                ctDto.setTaiSan(rg);
-            }
-            return ctDto;
-        }).collect(Collectors.toList()));
-
-        return dto;
+        return getChiTietBienBan(bb.getId());
     }
 
     public BienBanBanGiaoDto getChiTietBienBan(String id) {
-        BienBanBanGiao bb = bienBanRepo.findById(id).orElse(null);
-        if (bb == null) return null;
+        BienBanBanGiao bb = bienBanRepo.findById(id).orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Không tìm thấy biên bản có ID: " + id));
         
         List<ChiTietBienBan> chiTiets = chiTietRepo.findByBienBanId(bb.getId());
         List<String> taiSanIds = chiTiets.stream().map(ChiTietBienBan::getTaiSanId).collect(Collectors.toList());
@@ -189,10 +187,30 @@ public class TaiSanService {
                 rg.setMaTaiSan(ts.getMaTaiSan());
                 rg.setTenTaiSan(ts.getTenTaiSan());
                 rg.setThongTinChiTiet(ts.getThongTinChiTiet());
-                rg.setMaNguoiCapPhat(ts.getIdNguoiCapPhat());
+                
+                if (ts instanceof TaiSanPhuongTien) {
+                    TaiSanPhuongTien pt = (TaiSanPhuongTien) ts;
+                    rg.setBienSo(pt.getBienSo());
+                    rg.setSoKhung(pt.getSoKhung());
+                    rg.setSoMay(pt.getSoMay());
+                    rg.setNhanHieu(pt.getNhanHieu());
+                } else if (ts instanceof TaiSanThietBiCntt) {
+                    TaiSanThietBiCntt cntt = (TaiSanThietBiCntt) ts;
+                    rg.setSoSerial(cntt.getSoSerial());
+                    rg.setDiaChiMac(cntt.getDiaChiMac());
+                    rg.setCauHinh(cntt.getCauHinh());
+                } else if (ts instanceof TaiSanVuKhi) {
+                    TaiSanVuKhi vk = (TaiSanVuKhi) ts;
+                    rg.setSoHieu(vk.getSoHieu());
+                    rg.setNamSanXuat(vk.getNamSanXuat());
+                }
+                if (ts.getNguoiCapPhat() != null) {
+                    rg.setMaNguoiCapPhat(ts.getNguoiCapPhat().getId());
+                    if (ts.getNguoiCapPhat().getCongDan() != null) {
+                        rg.setNguoiCapPhat(ts.getNguoiCapPhat().getCongDan().getHoTen());
+                    }
+                }
                 rg.setNgayCapPhat(ts.getNgayCapPhat());
-                if (ts.getIdNguoiCapPhat() != null)
-                    rg.setNguoiCapPhat("Tên " + ts.getIdNguoiCapPhat());
                 ctDto.setTaiSan(rg);
             }
             return ctDto;
@@ -203,7 +221,7 @@ public class TaiSanService {
 
     @Transactional
     public BienBanBanGiaoDto pheDuyetBienBan(String id, PheDuyetRequest request) {
-        BienBanBanGiao bb = bienBanRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy biên bản!"));
+        BienBanBanGiao bb = bienBanRepo.findById(id).orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Không tìm thấy biên bản có ID: " + id));
         if (!"NHAP".equals(bb.getTrangThai())) {
             throw new IllegalArgumentException("Chỉ có thể ký duyệt biên bản ở trạng thái NHAP!");
         }
@@ -214,31 +232,43 @@ public class TaiSanService {
         
         List<ChiTietBienBan> chiTiets = chiTietRepo.findByBienBanId(bb.getId());
         List<String> taiSanIds = chiTiets.stream().map(ChiTietBienBan::getTaiSanId).collect(Collectors.toList());
-        List<TaiSan> taiSans = taiSanRepo.findAllWithLockByIdIn(taiSanIds);
+        taiSanRepo.lockTaiSanIds(taiSanIds);
+        List<TaiSan> taiSans = taiSanRepo.findAllByIdWithSubclass(taiSanIds);
         
+        if (taiSans.size() != taiSanIds.size()) {
+            throw new jakarta.persistence.EntityNotFoundException("Một hoặc nhiều tài sản trong biên bản không tồn tại hoặc đã bị xóa!");
+        }
+        
+        DonVi donViNhan = "DON_VI".equals(bb.getLoaiBenNhan()) ? donViRepo.findById(bb.getIdBenNhan()).orElse(null) : null;
+        CanBoChienSi canBoNhan = "CAN_BO".equals(bb.getLoaiBenNhan()) ? canBoRepo.findById(bb.getIdBenNhan()).orElse(null) : null;
+        CanBoChienSi nguoiKy = canBoRepo.findById(request.getNguoiKyId()).orElse(null);
+
         for (TaiSan ts : taiSans) {
-            // [B6 Fix]: Kiểm tra quyền sở hữu trước khi phê duyệt (tránh trường hợp tài sản đã đổi chủ trong lúc chờ duyệt)
             if ("CAN_BO".equals(bb.getLoaiBenGiao())) {
-                if (ts.getIdCanBoSuDung() == null || !ts.getIdCanBoSuDung().equals(bb.getIdBenGiao())) {
+                if (ts.getCanBoSuDung() == null || !ts.getCanBoSuDung().getId().equals(bb.getIdBenGiao())) {
                     throw new IllegalArgumentException("Tài sản " + ts.getMaTaiSan() + " không do cán bộ này sử dụng, không thể phê duyệt!");
                 }
             } else if ("DON_VI".equals(bb.getLoaiBenGiao())) {
-                if (ts.getIdDonViQuanLy() == null || !ts.getIdDonViQuanLy().equals(bb.getIdBenGiao())) {
+                if (ts.getDonViQuanLy() == null || !ts.getDonViQuanLy().getId().equals(bb.getIdBenGiao())) {
                     throw new IllegalArgumentException("Tài sản " + ts.getMaTaiSan() + " không thuộc quản lý của đơn vị này, không thể phê duyệt!");
                 }
             } else if ("KHO".equals(bb.getLoaiBenGiao())) {
-                if (ts.getIdDonViQuanLy() != null || ts.getIdCanBoSuDung() != null) {
+                if (ts.getDonViQuanLy() != null || ts.getCanBoSuDung() != null) {
                     throw new IllegalArgumentException("Tài sản " + ts.getMaTaiSan() + " đã có đơn vị/cán bộ quản lý, không thể xuất từ Kho tổng!");
                 }
             }
 
             if ("DON_VI".equals(bb.getLoaiBenNhan())) {
-                ts.setIdDonViQuanLy(bb.getIdBenNhan());
-                ts.setIdCanBoSuDung(null);
+                ts.setDonViQuanLy(donViNhan);
+                ts.setCanBoSuDung(null);
             } else if ("CAN_BO".equals(bb.getLoaiBenNhan())) {
-                ts.setIdCanBoSuDung(bb.getIdBenNhan());
+                ts.setCanBoSuDung(canBoNhan);
+                ts.setDonViQuanLy(null);
+            } else if ("KHO".equals(bb.getLoaiBenNhan())) {
+                ts.setDonViQuanLy(null);
+                ts.setCanBoSuDung(null);
             }
-            ts.setIdNguoiCapPhat(request.getNguoiKyId());
+            ts.setNguoiCapPhat(nguoiKy);
             ts.setNgayCapPhat(LocalDate.now());
         }
         taiSanRepo.saveAll(taiSans);
@@ -251,23 +281,50 @@ public class TaiSanService {
         dto.setId(ts.getId());
         dto.setMaTaiSan(ts.getMaTaiSan());
         dto.setTenTaiSan(ts.getTenTaiSan());
-        dto.setMaDanhMucLoai(ts.getIdDanhMucLoai());
-        if (ts.getIdDanhMucLoai() != null)
-            dto.setTenLoaiTaiSan("Tên loại " + ts.getIdDanhMucLoai());
+        
+        if (ts.getLoaiTaiSan() != null) {
+            dto.setMaDanhMucLoai(ts.getLoaiTaiSan().getId());
+            dto.setTenLoaiTaiSan(ts.getLoaiTaiSan().getTen());
+        }
+        
+        if (ts instanceof TaiSanPhuongTien) {
+            TaiSanPhuongTien pt = (TaiSanPhuongTien) ts;
+            dto.setBienSo(pt.getBienSo());
+            dto.setSoKhung(pt.getSoKhung());
+            dto.setSoMay(pt.getSoMay());
+            dto.setNhanHieu(pt.getNhanHieu());
+        } else if (ts instanceof TaiSanThietBiCntt) {
+            TaiSanThietBiCntt cntt = (TaiSanThietBiCntt) ts;
+            dto.setSoSerial(cntt.getSoSerial());
+            dto.setDiaChiMac(cntt.getDiaChiMac());
+            dto.setCauHinh(cntt.getCauHinh());
+        } else if (ts instanceof TaiSanVuKhi) {
+            TaiSanVuKhi vk = (TaiSanVuKhi) ts;
+            dto.setSoHieu(vk.getSoHieu());
+            dto.setNamSanXuat(vk.getNamSanXuat());
+        }
+        
         dto.setThongTinChiTiet(ts.getThongTinChiTiet());
         dto.setTinhTrang(ts.getTinhTrang());
 
-        dto.setMaDonViQuanLy(ts.getIdDonViQuanLy());
-        if (ts.getIdDonViQuanLy() != null)
-            dto.setTenDonViQuanLy("Tên đơn vị " + ts.getIdDonViQuanLy());
+        if (ts.getDonViQuanLy() != null) {
+            dto.setMaDonViQuanLy(ts.getDonViQuanLy().getId());
+            dto.setTenDonViQuanLy(ts.getDonViQuanLy().getTen());
+        }
 
-        dto.setMaCanBoSuDung(ts.getIdCanBoSuDung());
-        if (ts.getIdCanBoSuDung() != null)
-            dto.setTenCanBoSuDung("Tên cán bộ " + ts.getIdCanBoSuDung());
+        if (ts.getCanBoSuDung() != null) {
+            dto.setMaCanBoSuDung(ts.getCanBoSuDung().getId());
+            if (ts.getCanBoSuDung().getCongDan() != null) {
+                dto.setTenCanBoSuDung(ts.getCanBoSuDung().getCongDan().getHoTen());
+            }
+        }
 
-        dto.setMaNguoiCapPhat(ts.getIdNguoiCapPhat());
-        if (ts.getIdNguoiCapPhat() != null)
-            dto.setNguoiCapPhat("Tên người cấp phát " + ts.getIdNguoiCapPhat());
+        if (ts.getNguoiCapPhat() != null) {
+            dto.setMaNguoiCapPhat(ts.getNguoiCapPhat().getId());
+            if (ts.getNguoiCapPhat().getCongDan() != null) {
+                dto.setNguoiCapPhat(ts.getNguoiCapPhat().getCongDan().getHoTen());
+            }
+        }
         dto.setNgayCapPhat(ts.getNgayCapPhat());
 
         return dto;

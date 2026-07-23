@@ -4,7 +4,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "PT_CONG_DAN")
+@Table(name = "pt_cong_dan")
 @Data
 public class CongDan {
     @Id
@@ -14,10 +14,24 @@ public class CongDan {
     private LocalDate ngaySinh;
     private String gioiTinh;
     private String queQuan;
-    private String maDanToc;
-    private String maTonGiao;
-    private String maDghcThuongTru;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dan_toc")
+    private DanToc danToc;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ton_giao")
+    private TonGiao tonGiao;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dghc_thuong_tru")
+    private DiaGioiHanhChinh dghcThuongTru;
+    
     private String diaChiThuongTru;
-    private String maDghcHienTai;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dghc_hien_tai")
+    private DiaGioiHanhChinh dghcHienTai;
+    
     private String diaChiHienTai;
 }

@@ -12,7 +12,6 @@ public class TaiSanRutGonDto {
     @Schema(example = "Màn hình Dell 27 inch")
     private String tenTaiSan;
     
-    @Schema(example = "{\"doPhanGiai\": \"4K\", \"hang\": \"Dell\", \"inch\": 27}")
     private Map<String, Object> thongTinChiTiet;
 
     @Schema(example = "CB002")
@@ -23,4 +22,19 @@ public class TaiSanRutGonDto {
 
     @Schema(example = "2024-05-15")
     private java.time.LocalDate ngayCapPhat;
+
+    // Các trường đặc thù của Phương Tiện
+    private String bienSo;
+    private String soKhung;
+    private String soMay;
+    private String nhanHieu;
+
+    // Các trường đặc thù của Thiết bị CNTT
+    private String soSerial;
+    private String diaChiMac;
+    private String cauHinh;
+
+    // Các trường đặc thù của Vũ Khí
+    private String soHieu;
+    private String namSanXuat;
 }

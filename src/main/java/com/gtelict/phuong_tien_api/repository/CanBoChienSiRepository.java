@@ -5,16 +5,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CanBoChienSiRepository extends JpaRepository<CanBoChienSi, String> {
     
+    @EntityGraph(attributePaths = {"donVi", "congDan"})
     @Query("SELECT c FROM CanBoChienSi c WHERE " +
-           "(:maDonVi IS NULL OR c.idDonVi = :maDonVi) AND " +
+           "(:maDonVi IS NULL OR c.donVi.ma = :maDonVi) AND " +
            "(:maCanBo IS NULL OR c.maCanBo = :maCanBo) AND " +
            "(:capBac IS NULL OR c.capBac = :capBac) AND " +
-           "(:hoTen IS NULL OR c.congDan.hoTen LIKE %:hoTen%) AND " +
+           "(:hoTen IS NULL OR LOWER(c.congDan.hoTen) LIKE LOWER(CONCAT('%', :hoTen, '%'))) AND " +
            "(:soCccd IS NULL OR c.congDan.soCccd = :soCccd)")
     Page<CanBoChienSi> search(@Param("maDonVi") String maDonVi, 
                               @Param("maCanBo") String maCanBo, 
